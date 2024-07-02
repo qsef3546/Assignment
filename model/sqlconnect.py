@@ -45,7 +45,14 @@ def selects():
         res = session.exec(statement).all()
         s = {'res':[x.__dict__ for x in res]}
         return s
-        
+def select_one(email:str):
+    with Session(engine) as session:
+        statement = select(user).where(user.email==email)
+        userinfo = session.exec(statement).one_or_none()
+        if not userinfo:
+            return None
+        else:
+            return userinfo
 def insert(u:user):
     res = emptycheck(u) 
     if res != 200:
@@ -58,16 +65,26 @@ def insert(u:user):
     res = password_validation(u.pw)
     if res != 200:
         return JSONResponse({"code":res,"message":error.errorcode[res]},200)
-
+    
     try:
+        res = select_one(u.email)
+        if res :
+            return JSONResponse({"code":1109,"message":error.errorcode[1109].format(u.email)},200)
+            
         pw_hash.update(u.pw.encode())
         u.pw = pw_hash.hexdigest()
         with Session(engine) as session:
-            session.add(u)
-            session.commit()
+            try:
+                session.add(u)
+                session.commit()
+                session.refresh(u)
+            except Exception as e:
+                session.rollback()
+                raise e
     except Exception as e:
-        session.rollback()
-        return JSONResponse({"code":1200,"message":e},500)
+        return JSONResponse({"code":1200,"message":error.errorcode[1200],"error message":f'{e}'},500)
+    
+    return JSONResponse({"message":f"{u.email} 님의 회원가입이 완료되었습니다."},200)
 
 
 

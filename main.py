@@ -1,9 +1,10 @@
 from fastapi import FastAPI
-from model.sqlconnect import user,insert,selects,update
+from handler import auth_handler,user_handler
 app = FastAPI()
+app.include_router(auth_handler.auth_router)
+app.include_router(user_handler.user_router)
 
-
-@app.get("/hello")
+@app.get("/login")
 def hello():
     return {"message": "hello world"}
 
@@ -11,19 +12,4 @@ def hello():
 @app.get("/")
 def root():
     return {"message": "root tesst"}
-
-@app.post("/user/insert")
-def user_insert(u:user):
-    return insert(u)
-    
-
-@app.get("/user/list")
-def user_select():
-    return selects()
-
-@app.patch("/user/put")
-def user_put(u:user):
-    res = update(u)
-    return {"message": "update success!"}
-
 
