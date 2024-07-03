@@ -60,6 +60,7 @@ def update(u:user):
             session.add(u)
             session.commit()
     except Exception as e:
+        session.rollback()
         res = False
         error_msg = e
     finally:
