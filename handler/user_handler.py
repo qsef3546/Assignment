@@ -1,14 +1,12 @@
 from fastapi import APIRouter
 from fastapi.responses import JSONResponse
-from model.sqlconnect import user,insert,selects,select_one,update
-from error_code import error
+from model.user import user,insert,selects,select_one,update
+from handler.auth_handler import encoded_pw
+from handler.response_handler import handle_error
 import re
-import hashlib
-user_router = APIRouter(prefix="/user")
-pw_hash = hashlib.sha256()
 
-def handle_error(res,status_code=200):
-    return JSONResponse({"code": res, "message": error.errorcode[res]}, status_code)
+
+user_router = APIRouter(prefix="/user")
 
 def emptycheck(u:user):
     if not u.email:
@@ -51,9 +49,8 @@ def user_insert(u:user):
     
     if select_one(u.email) :
         return handle_error(1201,409)
-                
-    pw_hash.update(u.pw.encode())
-    u.pw = pw_hash.hexdigest()
+    
+    u.pw = encoded_pw(u.pw)
     if (res := insert(u)) == False:
         handle_error(1200,500)        
     else:
@@ -70,8 +67,7 @@ def user_put(u:user):
     if u.pw:
         if (res := password_validation(u.pw)) != 200:
             return handle_error(res)
-        pw_hash.update(u.pw.encode())
-        putuser.pw = pw_hash.hexdigest()
+        putuser.pw = encoded_pw(u.pw)
     if (res := update(putuser)) == False:
         handle_error(1200,500)        
     else:
