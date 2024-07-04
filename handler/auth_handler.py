@@ -1,13 +1,15 @@
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, Request
 from fastapi.security import OAuth2PasswordRequestForm
 from model.user import user,insert,select_one,update
 from handler.response_handler import handle_error
 from fastapi.responses import JSONResponse
+from starlette.middleware.base import BaseHTTPMiddleware
 from error_code import error
 from jose import jwt, JWTError
 from dotenv import load_dotenv
 import os
 import hashlib
+import time
 from datetime import datetime,timedelta
 auth_router = APIRouter(prefix="/auth")
 
@@ -17,6 +19,39 @@ SECRET_KEY = os.getenv("SECRET_KEY")
 ALGORITHM = "HS256"
 ACCESS_TOKEN_EXPIRE_TIME = 60
 REFRESH_TOKEN_EXPIRE_TIME = 60 * 24
+
+EXCEPT_PATH = ["/auth/login","/access_token"]
+class JWTAuthMiddleware(BaseHTTPMiddleware):
+    async def dispatch(self, request: Request, call_next):
+        auth_header = request.headers.get("Authorization")
+        if request.url.path in EXCEPT_PATH:
+            response = await call_next(request)
+            return response
+        if auth_header:
+            try:
+                token_type, token = auth_header.split()
+                if token_type.lower() != "bearer":
+                    return handle_error(1302,401)
+                
+                payload = jwt.decode(token, SECRET_KEY, algorithms=ALGORITHM)
+                username = payload.get('id')
+                if not username or not select_one(email=username):
+                    return handle_error(1303,401)
+                
+                timestamp = payload.get('exp')
+                if timestamp <= int(time.time()):
+                    return handle_error(1301,401)
+                
+            except (JWTError,ValueError):
+                return handle_error(1303,401)
+        else:
+            return handle_error(1304,401)
+        
+        response = await call_next(request)
+        return response
+
+
+
 
 def create_token(data:dict, expire_time:int) -> str:
     enc_data = data.copy()
@@ -38,3 +73,6 @@ async def login(form_data: OAuth2PasswordRequestForm = Depends()):
     access_token = create_token(data,ACCESS_TOKEN_EXPIRE_TIME)
     refresh_token = create_token(data,REFRESH_TOKEN_EXPIRE_TIME)
     return JSONResponse({"access_token":access_token,"refresh_token":refresh_token},200)
+
+# @auth_router.post("/refresh_token")
+# async def refresh_token
