@@ -20,7 +20,7 @@ ALGORITHM = "HS256"
 ACCESS_TOKEN_EXPIRE_TIME = 60
 REFRESH_TOKEN_EXPIRE_TIME = 60 * 24
 
-EXCEPT_PATH = ["/docs","/openapi.json","/auth/login","/user/insert","/access_token","/board/list"]
+EXCEPT_PATH = ["/docs","/openapi.json","/auth/login","/user/insert","/access_token","/board/list","/board/{no}"]
 class JWTAuthMiddleware(BaseHTTPMiddleware):
     async def dispatch(self, request: Request, call_next):
         if request.url.path in EXCEPT_PATH:

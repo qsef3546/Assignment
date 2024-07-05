@@ -5,7 +5,8 @@ from datetime import datetime
 
 class Board(SQLModel, table=True):
     __tablename__ =  "Board"
-    board_name: str = Field(unique=True,nullable=False,primary_key=True)
+    no: int = Field(primary_key=True)
+    board_name: str = Field(nullable=False)
     owner: str = Field(nullable=False)
     content: str = Field(nullable=False)
     create_time : datetime = Field(nullable=False)
@@ -27,7 +28,16 @@ def selects():
         print(f'[DB] [ERROR] file : {__file__} , function : selects , message : {e}')
         
         
-
+def select_one(no:str):
+    try:
+        with Session(engine) as session:
+            statement = select(Board).where(Board.no==no)
+            boardinfo = session.exec(statement).one_or_none()
+            print(f'[DB] [SUCCESS] file : {__file__} , function : select_one')
+            return boardinfo
+    except Exception as e:
+        print(f'[DB] [ERROR] file : {__file__} , function : insert , message : {e}')
+        return False
 
 def insert(b:Board):
     res = True

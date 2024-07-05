@@ -51,7 +51,7 @@ def user_insert(u:User):
         return handle_error(1201,409)
     
     u.pw = encoded_pw(u.pw)
-    if (res := insert(u)) == False:
+    if insert(u) == False:
         handle_error(1200,500)        
     else:
         return JSONResponse({"message":f"{u.email} 님의 회원가입이 완료되었습니다."},200)
