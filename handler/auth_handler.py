@@ -1,6 +1,6 @@
 from fastapi import APIRouter, Depends, HTTPException, Request
 from fastapi.security import OAuth2PasswordRequestForm
-from model.user import user,insert,select_one,update
+from model.user import User,insert,select_one,update
 from handler.response_handler import handle_error
 from fastapi.responses import JSONResponse
 from starlette.middleware.base import BaseHTTPMiddleware
@@ -20,13 +20,13 @@ ALGORITHM = "HS256"
 ACCESS_TOKEN_EXPIRE_TIME = 60
 REFRESH_TOKEN_EXPIRE_TIME = 60 * 24
 
-EXCEPT_PATH = ["/auth/login","/access_token"]
+EXCEPT_PATH = ["/docs","/openapi.json","/auth/login","/user/insert","/access_token","/board/list"]
 class JWTAuthMiddleware(BaseHTTPMiddleware):
     async def dispatch(self, request: Request, call_next):
-        auth_header = request.headers.get("Authorization")
         if request.url.path in EXCEPT_PATH:
             response = await call_next(request)
             return response
+        auth_header = request.headers.get("Authorization")
         if auth_header:
             try:
                 token_type, token = auth_header.split()
@@ -35,18 +35,20 @@ class JWTAuthMiddleware(BaseHTTPMiddleware):
                 
                 payload = jwt.decode(token, SECRET_KEY, algorithms=ALGORITHM)
                 username = payload.get('id')
-                if not username or not select_one(email=username):
+                u:User = None
+                if not username or not (u :=select_one(email=username)):
                     return handle_error(1303,401)
                 
                 timestamp = payload.get('exp')
                 if timestamp <= int(time.time()):
                     return handle_error(1301,401)
-                
+                # request.state._state.update({"user":u})
+                request.state.user_id = username
+                request.state.u = u
             except (JWTError,ValueError):
                 return handle_error(1303,401)
         else:
             return handle_error(1304,401)
-        
         response = await call_next(request)
         return response
 
@@ -66,7 +68,7 @@ def encoded_pw(pw:str):
 
 @auth_router.post("/login")
 async def login(form_data: OAuth2PasswordRequestForm = Depends()):
-    u:user = select_one(form_data.username)
+    u:User = select_one(form_data.username)
     if not u or not (encoded_pw(form_data.password) == u.pw):
         return handle_error(1110,401)
     data = {"id": form_data.username}

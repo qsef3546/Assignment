@@ -1,6 +1,6 @@
 from fastapi import APIRouter
 from fastapi.responses import JSONResponse
-from model.user import user,insert,selects,select_one,update
+from model.user import User,insert,selects,select_one,update
 from handler.auth_handler import encoded_pw
 from handler.response_handler import handle_error
 import re
@@ -8,7 +8,7 @@ import re
 
 user_router = APIRouter(prefix="/user")
 
-def emptycheck(u:user):
+def emptycheck(u:User):
     if not u.email:
         return 1101
     if not u.name:
@@ -39,7 +39,7 @@ def user_select():
     return selects()
 
 @user_router.post("/insert")
-def user_insert(u:user):
+def user_insert(u:User):
     if (res := emptycheck(u))  != 200:
         return handle_error(res)
     elif (res := email_validation(u.email)) != 200 :
@@ -57,7 +57,7 @@ def user_insert(u:user):
         return JSONResponse({"message":f"{u.email} 님의 회원가입이 완료되었습니다."},200)
     
 @user_router.patch("/put")
-def user_put(u:user):
+def user_put(u:User):
     putuser = select_one(u.email)
     if not putuser:
         return handle_error(1202)

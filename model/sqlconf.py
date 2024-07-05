@@ -1,5 +1,6 @@
 from pydantic import PostgresDsn
 from pydantic_core import MultiHostUrl
+from sqlmodel import SQLModel, create_engine
 class Config:
 
     SCHEME = "postgresql"
@@ -21,3 +22,5 @@ class Config:
         )
     
 config = Config()
+engine = create_engine(str(config.SQLALCHEMY_DATABASE_URI))
+

@@ -18,6 +18,9 @@ errorcode = {
     1301 : "access token이 만료되었습니다.",
     1302 : "유효하지 않은 token 타입 입니다.",
     1303 : "유효하지 않은 token 입니다.",
-    1304 : "Authorization head missing"
+    1304 : "Authorization head missing",
+
+    1401 : "게시글이 없습니다.",
+    1402 : "게시글 제목을 100자 이내로 작성해주세요"
 
 }

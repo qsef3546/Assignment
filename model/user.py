@@ -1,18 +1,15 @@
-from sqlmodel import Field, SQLModel, create_engine, Session, select
-from model.sqlconf import config
-from error_code import error
-from inspect import currentframe, getframeinfo
-engine = create_engine(str(config.SQLALCHEMY_DATABASE_URI))
-SQLModel.metadata.create_all(engine)
+from sqlmodel import Field, SQLModel, Session, select
+from model.sqlconf import engine
 
-class user(SQLModel, table=True):
+class User(SQLModel, table=True):
+    __tablename__ = "User"
     email: str = Field(unique=True,nullable=False,primary_key=True)
     name: str = Field(nullable=False)
     pw: str = Field(nullable=False)
     
 def selects():
     with Session(engine) as session:
-        statement = select(user)
+        statement = select(User)
         res = session.exec(statement).all()
         s = {'res':[x.__dict__ for x in res]}
         return s
@@ -20,7 +17,7 @@ def selects():
 def select_one(email:str):
     try:
         with Session(engine) as session:
-            statement = select(user).where(user.email==email)
+            statement = select(User).where(User.email==email)
             userinfo = session.exec(statement).one_or_none()
             print(f'[DB] [SUCCESS] file : {__file__} , function : select_one')
             return userinfo
@@ -28,7 +25,7 @@ def select_one(email:str):
         print(f'[DB] [ERROR] file : {__file__} , function : insert , message : {e}')
         return False
     
-def insert(u:user):
+def insert(u:User):
     res = True
     error_msg = ''
     try:
@@ -52,7 +49,7 @@ def insert(u:user):
 
 
 
-def update(u:user):
+def update(u:User):
     res = True
     error_msg = ''
     try:
