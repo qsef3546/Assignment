@@ -1,6 +1,6 @@
 from fastapi import APIRouter, Request
 from fastapi.responses import JSONResponse
-from model.board import Board,insert,selects,select_one,update,delete,RECENTLY,VIEW
+from model.board import Board,insert,selects,select_one,update_one,delete,RECENTLY,VIEW
 from handler.response_handler import handle_error
 from datetime import datetime
 board_router = APIRouter(prefix="/board")
@@ -76,7 +76,7 @@ def board_put(b:Board, request:Request):
 
     fixb.fixed_time = datetime.now()
 
-    if update(fixb) == False:
+    if update_one(fixb) == False:
         handle_error(1200,500)
     return JSONResponse({"message" : "게시글 수정이 완료되었습니다"},200)
 

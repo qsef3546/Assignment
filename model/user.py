@@ -1,6 +1,6 @@
-from sqlmodel import Field, SQLModel, select
+from sqlmodel import Field, SQLModel, select,update,delete
 from model.sqlconf import get_session
-
+from model.board import Board
 class User(SQLModel, table=True):
     __tablename__ = "User"
     email: str = Field(unique=True,nullable=False,primary_key=True)
@@ -49,12 +49,16 @@ def insert(u:User):
 
 
 
-def update(u:User):
+def update_one(u:User):
     res = True
     error_msg = ''
     try:
         with get_session() as session:
             session.add(u)
+            board_statement = (
+                update(Board).where(Board.email == u.email).values(owner=u.name)
+            )
+            session.exec(board_statement)
             session.commit()
     except Exception as e:
         session.rollback()
@@ -65,4 +69,32 @@ def update(u:User):
             print(f'[DB] [SUCCESS] file : {__file__} , function : update')
         else :
             print(f'[DB] [ERROR] file : {__file__} , function : update , message : {error_msg}')
+        return res
+
+def withdrawal(email:str):
+    res = True
+    try :
+        with get_session() as session:
+            try:
+                user_statement = delete(User).where(User.email==email)
+                
+                board_statement = (
+                    update(Board)
+                    .where(Board.email == email)
+                    .values(owner="탈퇴한 유저")
+                )
+                session.exec(user_statement)
+                session.exec(board_statement)
+                session.commit()
+            except Exception as e:
+                session.rollback()
+                raise e
+    except Exception as e:
+        res = False
+        error_msg = e
+    finally:
+        if res:
+            print(f'[DB] [SUCCESS] file : {__file__} , function : delete')
+        else :
+            print(f'[DB] [ERROR] file : {__file__} , function : delete , message : {error_msg}')
         return res

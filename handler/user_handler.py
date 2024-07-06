@@ -1,8 +1,9 @@
 from fastapi import APIRouter, Request
 from fastapi.responses import JSONResponse
-from model.user import User,insert,selects,select_one,update
+from model.user import User,insert,selects,select_one,update_one,withdrawal
 from handler.auth_handler import encoded_pw
 from handler.response_handler import handle_error
+from fastapi.security import OAuth2PasswordRequestForm
 import re
 
 
@@ -56,7 +57,7 @@ def user_insert(u:User):
     else:
         return JSONResponse({"message":f"{u.email} 님의 회원가입이 완료되었습니다."},200)
     
-@user_router.patch("/put")
+@user_router.put("/put")
 def user_put(u:User, request:Request):
     putuser = select_one(u.email)
     email = request.state.u.email
@@ -71,7 +72,21 @@ def user_put(u:User, request:Request):
         if (res := password_validation(u.pw)) != 200:
             return handle_error(res)
         putuser.pw = encoded_pw(u.pw)
-    if (res := update(putuser)) == False:
+    if (res := update_one(putuser)) == False:
         handle_error(1200,500)        
     else:
         return JSONResponse({"message":"수정이 완료되었습니다."},200)
+    
+@user_router.delete("/delete")
+def user_delete(u:User, request:Request):
+    jwt_u = request.state.u
+    if not u.email or u.email != jwt_u.email:
+        return handle_error(1111,403)
+    
+    delete_u:User = select_one(u.email)
+    if not encoded_pw(u.pw) == delete_u.pw:
+        return handle_error(1109,401)
+    if (res := withdrawal(u.email)) == False:
+        handle_error(1200,500)        
+    else:
+        return JSONResponse({"message":"회원 탈퇴가 완료되었습니다."},200)

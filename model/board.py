@@ -1,6 +1,5 @@
-from sqlmodel import Field, SQLModel, select
+from sqlmodel import Field, SQLModel, select, update
 from model.sqlconf import get_session
-from model.user import User
 from datetime import datetime
 
 
@@ -79,7 +78,7 @@ def insert(b:Board):
         return res
 
         
-def update(b:Board):
+def update_one(b:Board):
     res = True
     error_msg = ''
     try:

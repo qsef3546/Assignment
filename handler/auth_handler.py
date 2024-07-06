@@ -19,7 +19,7 @@ ACCESS_TOKEN_EXPIRE_TIME = 60
 REFRESH_TOKEN_EXPIRE_TIME = 60 * 24
 
 # JWT_PATH = ["/docs","/openapi.json","/auth/login","/user/insert","/access_token","/board/list","/board/{no}"]
-JWT_PATH = ["/auth/add_access_token","/user/put","/board/insert","/board/put","/board/delete"]
+JWT_PATH = ["/auth/add_access_token","/user/delete","/user/put","/board/insert","/board/put","/board/delete"]
 
 class JWTAuthMiddleware(BaseHTTPMiddleware):
     async def dispatch(self, request: Request, call_next):
