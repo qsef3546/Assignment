@@ -1,15 +1,13 @@
-from fastapi import APIRouter, Depends, HTTPException, Request
+from fastapi import APIRouter, Depends, Request
 from fastapi.security import OAuth2PasswordRequestForm
-from model.user import User,insert,select_one,update
+from model.user import User,select_one
 from handler.response_handler import handle_error
 from fastapi.responses import JSONResponse
 from starlette.middleware.base import BaseHTTPMiddleware
-from error_code import error
 from jose import jwt, JWTError
 from dotenv import load_dotenv
 import os
 import hashlib
-import time
 from datetime import datetime,timedelta
 auth_router = APIRouter(prefix="/auth")
 
@@ -42,9 +40,6 @@ class JWTAuthMiddleware(BaseHTTPMiddleware):
                 if not username or not (u :=select_one(email=username)):
                     return handle_error(1303,401)
 
-                # timestamp = payload.get('exp')
-                # if timestamp <= int(time.time()):
-                #     return handle_error(1301,401)
                 request.state.u = u
             except jwt.ExpiredSignatureError:
                 return handle_error(1304,401)
