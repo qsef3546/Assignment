@@ -20,10 +20,12 @@ ALGORITHM = "HS256"
 ACCESS_TOKEN_EXPIRE_TIME = 60
 REFRESH_TOKEN_EXPIRE_TIME = 60 * 24
 
-EXCEPT_PATH = ["/docs","/openapi.json","/auth/login","/user/insert","/access_token","/board/list","/board/{no}"]
+# JWT_PATH = ["/docs","/openapi.json","/auth/login","/user/insert","/access_token","/board/list","/board/{no}"]
+JWT_PATH = ["/user/put","/board/insert","/board/put","/board/delete"]
+
 class JWTAuthMiddleware(BaseHTTPMiddleware):
     async def dispatch(self, request: Request, call_next):
-        if request.url.path in EXCEPT_PATH:
+        if request.url.path not in JWT_PATH:
             response = await call_next(request)
             return response
         auth_header = request.headers.get("Authorization")
@@ -32,23 +34,25 @@ class JWTAuthMiddleware(BaseHTTPMiddleware):
                 token_type, token = auth_header.split()
                 if token_type.lower() != "bearer":
                     return handle_error(1302,401)
-                
+
                 payload = jwt.decode(token, SECRET_KEY, algorithms=ALGORITHM)
                 username = payload.get('id')
+                
                 u:User = None
                 if not username or not (u :=select_one(email=username)):
                     return handle_error(1303,401)
-                
-                timestamp = payload.get('exp')
-                if timestamp <= int(time.time()):
-                    return handle_error(1301,401)
-                # request.state._state.update({"user":u})
-                request.state.user_id = username
+
+                # timestamp = payload.get('exp')
+                # if timestamp <= int(time.time()):
+                #     return handle_error(1301,401)
                 request.state.u = u
+            except jwt.ExpiredSignatureError:
+                return handle_error(1304,401)
             except (JWTError,ValueError):
                 return handle_error(1303,401)
+
         else:
-            return handle_error(1304,401)
+            return handle_error(1305,401)
         response = await call_next(request)
         return response
 

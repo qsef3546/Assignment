@@ -62,7 +62,7 @@ def update(u:User):
         error_msg = e
     finally:
         if res:
-            print(f'[DB] [SUCCESS] file : {__file__} , function : insert')
+            print(f'[DB] [SUCCESS] file : {__file__} , function : update')
         else :
-            print(f'[DB] [ERROR] file : {__file__} , function : insert , message : {error_msg}')
+            print(f'[DB] [ERROR] file : {__file__} , function : update , message : {error_msg}')
         return res
