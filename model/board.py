@@ -1,7 +1,11 @@
-from sqlmodel import Field, SQLModel, Session, select
-from model.sqlconf import engine
+from sqlmodel import Field, SQLModel, select
+from model.sqlconf import get_session
 from model.user import User
 from datetime import datetime
+
+
+RECENTLY = 1
+VIEW = 2
 
 class Board(SQLModel, table=True):
     __tablename__ =  "Board"
@@ -14,11 +18,14 @@ class Board(SQLModel, table=True):
     fixed_time : datetime | None = Field(nullable=True, default= None)
     view : int = Field(nullable=True, default=0)
 
-def selects():
+def selects(type:int):
     try:
-        with Session(engine) as session:
+        with get_session() as session:
             try:
                 statement = select(Board)
+                if type == VIEW:
+                    statement = statement.order_by(Board.view.desc())
+                
                 b = session.exec(statement).all()
                 print(f'[DB] [SUCCESS] file : {__file__} , function : selects')
                 return b
@@ -31,10 +38,19 @@ def selects():
         
 def select_one(no:str):
     try:
-        with Session(engine) as session:
+        with get_session() as session:
             statement = select(Board).where(Board.no==no)
             boardinfo = session.exec(statement).one_or_none()
             print(f'[DB] [SUCCESS] file : {__file__} , function : select_one')
+            if boardinfo:
+                try:
+                    boardinfo.view += 1
+                    session.add(boardinfo)
+                    session.commit()
+                    session.refresh(boardinfo)
+                except Exception as e:
+                    session.rollback()
+                    raise e
             return boardinfo
     except Exception as e:
         print(f'[DB] [ERROR] file : {__file__} , function : insert , message : {e}')
@@ -44,7 +60,7 @@ def insert(b:Board):
     res = True
     error_msg = ''
     try:
-        with Session(engine) as session:
+        with get_session() as session:
             try:
                 session.add(b)
                 session.commit()
@@ -67,7 +83,7 @@ def update(b:Board):
     res = True
     error_msg = ''
     try:
-        with Session(engine) as session:
+        with get_session() as session:
             session.add(b)
             session.commit()
     except Exception as e:
@@ -84,7 +100,7 @@ def update(b:Board):
 def delete(no:int):
     res = True
     try:
-        with Session(engine) as session:
+        with get_session() as session:
             try:
                 statement = select(Board).where(Board.no==no)
                 deleteboard = session.exec(statement).one()

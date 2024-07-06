@@ -1,5 +1,5 @@
-from sqlmodel import Field, SQLModel, Session, select
-from model.sqlconf import engine
+from sqlmodel import Field, SQLModel, select
+from model.sqlconf import get_session
 
 class User(SQLModel, table=True):
     __tablename__ = "User"
@@ -8,7 +8,7 @@ class User(SQLModel, table=True):
     pw: str = Field(nullable=False)
     
 def selects():
-    with Session(engine) as session:
+    with get_session() as session:
         statement = select(User)
         res = session.exec(statement).all()
         s = {'res':[x.__dict__ for x in res]}
@@ -16,7 +16,7 @@ def selects():
     
 def select_one(email:str):
     try:
-        with Session(engine) as session:
+        with get_session() as session:
             statement = select(User).where(User.email==email)
             userinfo = session.exec(statement).one_or_none()
             print(f'[DB] [SUCCESS] file : {__file__} , function : select_one')
@@ -29,7 +29,7 @@ def insert(u:User):
     res = True
     error_msg = ''
     try:
-        with Session(engine) as session:
+        with get_session() as session:
             try:
                 session.add(u)
                 session.commit()
@@ -53,7 +53,7 @@ def update(u:User):
     res = True
     error_msg = ''
     try:
-        with Session(engine) as session:
+        with get_session() as session:
             session.add(u)
             session.commit()
     except Exception as e:

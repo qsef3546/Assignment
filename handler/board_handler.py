@@ -1,20 +1,16 @@
 from fastapi import APIRouter, Request
 from fastapi.responses import JSONResponse
-from model.board import Board,insert,selects,select_one,update,delete
-from handler.auth_handler import encoded_pw
+from model.board import Board,insert,selects,select_one,update,delete,RECENTLY,VIEW
 from handler.response_handler import handle_error
 from datetime import datetime
 board_router = APIRouter(prefix="/board")
-
-RECENTLY = 1
-VIEW = 2
 
 def board_validation(bordname:str):
     return len(bordname) <= 100
 
 @board_router.get("/list")
 async def board_list(type: int = RECENTLY):
-    boards:list = selects()
+    boards:list = selects(type)
     res = []
     if not boards :
         return handle_error(1401)
@@ -43,7 +39,6 @@ def board_one(no:int):
         "create_time":b.create_time.strftime("%Y년 %m월 %d일 %H시 %M분 %S.%f초"),
         "fixed_time":b.fixed_time.strftime("%Y년 %m월 %d일 %H시 %M분 %S.%f초") if b.fixed_time else ''
     }
-    print(res)
     return JSONResponse(res,200)
     
 @board_router.post("/insert")
