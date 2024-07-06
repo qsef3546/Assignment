@@ -21,6 +21,7 @@ async def board_list(type: int = RECENTLY):
     else :
         for b in boards:
             bn = {
+                "no":b.no,
                 "board_name":b.board_name,
                 "owner":b.owner,
                 "view":b.view
@@ -68,7 +69,7 @@ def board_put(b:Board, request:Request):
     email = request.state.u.email
 
     if email != fixb.email:
-        return handle_error(1404)
+        return handle_error(1404,403)
     
     if b.board_name:
         if not board_validation(b.board_name):
@@ -96,7 +97,7 @@ async def board_delete(no:int,request:Request):
     email = request.state.u.email
 
     if email != fixb.email:
-        return handle_error(1404)
+        return handle_error(1404,403)
     
     if delete(fixb.no) == False:
         handle_error(1200,500)
