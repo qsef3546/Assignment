@@ -21,7 +21,7 @@ ACCESS_TOKEN_EXPIRE_TIME = 60
 REFRESH_TOKEN_EXPIRE_TIME = 60 * 24
 
 # JWT_PATH = ["/docs","/openapi.json","/auth/login","/user/insert","/access_token","/board/list","/board/{no}"]
-JWT_PATH = ["/user/put","/board/insert","/board/put","/board/delete"]
+JWT_PATH = ["/auth/add_access_token","/user/put","/board/insert","/board/put","/board/delete"]
 
 class JWTAuthMiddleware(BaseHTTPMiddleware):
     async def dispatch(self, request: Request, call_next):
@@ -80,5 +80,8 @@ async def login(form_data: OAuth2PasswordRequestForm = Depends()):
     refresh_token = create_token(data,REFRESH_TOKEN_EXPIRE_TIME)
     return JSONResponse({"access_token":access_token,"refresh_token":refresh_token},200)
 
-# @auth_router.post("/refresh_token")
-# async def refresh_token
+@auth_router.post("/add_access_token")
+async def add_access_token(request:Request):
+    data = {"id": request.state.u.email}
+    access_token = create_token(data,ACCESS_TOKEN_EXPIRE_TIME)
+    return JSONResponse({"access_token":access_token},200)

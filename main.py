@@ -11,9 +11,3 @@ app.add_middleware(auth_handler.JWTAuthMiddleware)
 
 SQLModel.metadata.create_all(engine)
 
-
-
-@app.get("/")
-def root():
-    return {"message": "root tesst"}
-
