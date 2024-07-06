@@ -1,4 +1,4 @@
-from fastapi import APIRouter
+from fastapi import APIRouter, Request
 from fastapi.responses import JSONResponse
 from model.user import User,insert,selects,select_one,update
 from handler.auth_handler import encoded_pw
@@ -57,8 +57,11 @@ def user_insert(u:User):
         return JSONResponse({"message":f"{u.email} 님의 회원가입이 완료되었습니다."},200)
     
 @user_router.patch("/put")
-def user_put(u:User):
+def user_put(u:User, request:Request):
     putuser = select_one(u.email)
+    email = request.state.u.email
+    if email != putuser.email:
+        return handle_error(1111,403)
     if not putuser:
         return handle_error(1202)
             
