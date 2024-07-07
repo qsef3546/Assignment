@@ -1,6 +1,6 @@
 from fastapi import APIRouter, Request
 from fastapi.responses import JSONResponse
-from model.user import User,insert,selects,select_one,update_one,withdrawal
+from model.user import User,insert,select_one,update_one,withdrawal
 from handler.auth_handler import encoded_pw
 from handler.response_handler import handle_error
 from fastapi.security import OAuth2PasswordRequestForm
@@ -34,10 +34,6 @@ def password_validation(pw:str):
         return 1108
     return 200
 
-
-@user_router.get("/list")
-def user_select():
-    return selects()
 
 @user_router.post("/insert")
 def user_insert(u:User):

@@ -6,14 +6,7 @@ class User(SQLModel, table=True):
     email: str = Field(unique=True,nullable=False,primary_key=True)
     name: str = Field(nullable=False)
     pw: str = Field(nullable=False)
-    
-def selects():
-    with get_session() as session:
-        statement = select(User)
-        res = session.exec(statement).all()
-        s = {'res':[x.__dict__ for x in res]}
-        return s
-    
+        
 def select_one(email:str):
     try:
         with get_session() as session:
