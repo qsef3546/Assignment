@@ -6,3 +6,4 @@ sqlmodel
 pydantic_core
 python-jose[cryptography]
 python-dotenv
+pytest
