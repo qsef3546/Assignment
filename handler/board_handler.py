@@ -6,7 +6,7 @@ from datetime import datetime
 board_router = APIRouter(prefix="/board")
 
 def board_validation(bordname:str):
-    return len(bordname) <= 100
+    return (0 < len(bordname) <= 100)
 
 @board_router.get("/list")
 async def board_list(type: int = RECENTLY):
@@ -20,6 +20,7 @@ async def board_list(type: int = RECENTLY):
                 "no":b.no,
                 "board_name":b.board_name,
                 "owner":b.owner,
+                "create_time":b.create_time.strftime("%Y년 %m월 %d일 %H시 %M분 %S.%f초"),
                 "view":b.view
             }
             res.append(bn)

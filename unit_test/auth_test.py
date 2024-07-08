@@ -8,6 +8,7 @@ from model.sqlconf import get_session
 from main import app
 
 client = TestClient(app)
+expired_access_token = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6Inp6QHp6LmNvbSIsImV4cCI6MTcyMDMyNjE2Mn0.lk5hqAYYJXvLwmTLSaEQlOT7niEP37rlWSTLBB0WS1M'
 
 '''
 initialize
