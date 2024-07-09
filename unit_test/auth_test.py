@@ -21,7 +21,9 @@ def test_initialize():
         session.exec(board_statement)
         session.commit()
 
-
+'''
+- 로그인 검증
+'''
 def test_login():
     u:User = User(email="jslee@adoc.co.kr",name="JooSang",pw="123456aB@")
     response = client.post('/user/insert',
@@ -41,6 +43,9 @@ def test_login():
     assert refresh_token
 
 
+'''
+- 없는 유저의 로그인 검증
+'''
 def test_invalid_login():
     response = client.post(
         "auth/login",
@@ -50,3 +55,34 @@ def test_invalid_login():
     assert response.status_code == 401
     error_code = response.json().get("code")
     assert error_code == 1110
+
+
+'''
+- 토근 만료 검증 (error code: 1304)
+'''
+def test_expired_token():
+    b:Board= Board(board_name="토큰 만료 테스트 ",
+                   content="토큰 만료 테스트 글입니다.")
+    response = client.post('/board/insert',
+                headers={"Authorization": f'Bearer {expired_access_token}'},
+                json= b.model_dump()
+                )
+    
+    assert response.status_code == 401
+    error_code = response.json().get("code")
+    assert error_code == 1304
+
+'''
+- 유효하지 않은 token 검증 (error code: 1303)
+'''
+def test_valid_token():
+    b:Board= Board(board_name="유효하지 않은 token  테스트 ",
+                   content="유효하지 않은 token 입니다.")
+    response = client.post('/board/insert',
+                headers={"Authorization": f'Bearer asdfkiaweifj123'},
+                json= b.model_dump()
+                )
+    
+    assert response.status_code == 401
+    error_code = response.json().get("code")
+    assert error_code == 1303
