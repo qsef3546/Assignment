@@ -1,6 +1,5 @@
 from fastapi.testclient import TestClient
 import sys,os
-import json
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 from model.user import User,select_one
 from model.board import Board,insert
