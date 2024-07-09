@@ -9,8 +9,8 @@ def board_validation(bordname:str):
     return (0 < len(bordname) <= 100)
 
 @board_router.get("/list")
-async def board_list(type: int = RECENTLY):
-    boards:list = selects(type)
+async def board_list(type: int = RECENTLY, pageoffset:int = 0):
+    boards:list = selects(type,pageoffset)
     res = []
     if not boards :
         return handle_error(1401)

@@ -129,7 +129,59 @@ def test_list_or_one_board():
 
     after_test_board()
 
+'''
+- 게시글 페이지네이션
+@server : 5씩 pagenation 되도록 설정 되어있음
+case1 : offset 0 일때 검증 (공지사항1~5 글이 조회 돼야함)
+case2 : offset 1 일때 검증 (공지사항6~9 글이 조회 돼야함)
+'''
+def test_pagenation_board():
+    pagenation = 5
+    response = client.post("/auth/login",
+                            data={"username":u.email,"password":u.pw}
+                          )
+    assert response.status_code == 200
+    access_token = response.json().get("access_token")
 
+    board_list = [
+        Board(board_name="공지사항1",content="1내용입니다."),
+        Board(board_name="공지사항2",content="2내용입니다."),
+        Board(board_name="공지사항3",content="3내용입니다."),
+        Board(board_name="공지사항4",content="4내용입니다."),
+        Board(board_name="공지사항5",content="5내용입니다."),
+        Board(board_name="공지사항6",content="6내용입니다."),
+        Board(board_name="공지사항7",content="7내용입니다."),
+        Board(board_name="공지사항8",content="8내용입니다."),
+        Board(board_name="공지사항9",content="9내용입니다."),
+    ]
+    for b in board_list:
+            response = client.post('/board/insert',
+                headers={"Authorization": f'Bearer {access_token}'},
+                json= b.model_dump()
+                )
+            assert response.status_code == 200
+
+    # case1 : pageoffset 0 일때 검증 (공지사항1~5 글이 조회 돼야함)
+    pageoffset = 0
+    response = client.get('/board/list',
+                          params={"type":1,"pageoffset":pageoffset})
+    assert response.status_code == 200
+    resb = response.json()
+
+    for b , rb in zip(board_list[pagenation * 0: pagenation],resb):
+         assert b.board_name == rb['board_name']
+
+    # case2 : pageoffset 1 일때 검증 (공지사항6~9 글이 조회 돼야함)
+    pageoffset = 1
+    response = client.get('/board/list',
+                          params={"type":1,"pageoffset":pageoffset})
+    assert response.status_code == 200
+    resb = response.json()
+
+    for b , rb in zip(board_list[pagenation * pageoffset: pageoffset],resb):
+         assert b.board_name == rb['board_name']
+
+    after_test_board()
 '''
 - 게시글 수정 검증
 case 1: 게시글 권한이 없는 유저가 타 게시글 수정 (error code = 1404)

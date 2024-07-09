@@ -6,6 +6,7 @@ from datetime import datetime
 RECENTLY = 1
 VIEW = 2
 
+PAGEOFFSET = 5
 class Board(SQLModel, table=True):
     __tablename__ =  "Board"
     no: int = Field(primary_key=True)
@@ -17,14 +18,14 @@ class Board(SQLModel, table=True):
     fixed_time : datetime | None = Field(nullable=True, default= None)
     view : int = Field(nullable=True, default=0)
 
-def selects(type:int):
+def selects(type:int,pageoffset:int):
     try:
         with get_session() as session:
             try:
                 statement = select(Board)
                 if type == VIEW:
                     statement = statement.order_by(Board.view.desc())
-                
+                statement = statement.offset(pageoffset*PAGEOFFSET).limit(PAGEOFFSET)
                 b = session.exec(statement).all()
                 print(f'[DB] [SUCCESS] file : {__file__} , function : selects')
                 return b
