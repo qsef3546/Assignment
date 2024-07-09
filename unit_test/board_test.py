@@ -24,8 +24,18 @@ def test_initialize():
         session.commit()
 
 '''
+board initialize
+
+'''
+def after_test_board():
+    with get_session() as session:
+            board_statement = delete(Board)
+            session.exec(board_statement)
+            session.commit()
+
+'''
 - 게시판에 글 작성 검증
-case1 : 게시글 제목이 1~100자 외 입력한 경우
+case1 : 게시글 제목이 1~100자 외 입력한 경우 (error code = 1402)
 case2 : 게시글 작성이 되는지 검증(이모지 포함)
 '''
 
@@ -42,7 +52,7 @@ def test_insert_board():
     access_token = response.json().get("access_token")
 
     #case1 : 게시글 제목이 1~100자 외 입력한 경우
-    b:Board= Board(board_name="aaaaaaaaaabbbbbbbbbbccccccccccddddddddddeeeeeeeeeeffffffffffggggggggghhhhhhhhhhiiiiiiiiiijjjjjjjjjjjj",
+    b:Board= Board(board_name="a"*101,
                    content="test 글 입니다.")
     response = client.post('/board/insert',
                 headers={"Authorization": f'Bearer {access_token}'},
@@ -61,10 +71,7 @@ def test_insert_board():
                 )
     assert response.status_code == 200
 
-    with get_session() as session:
-        board_statement = delete(Board)
-        session.exec(board_statement)
-        session.commit()
+    after_test_board()
 '''
 - 게시글 검증
 case1 : 게시글 목록이 나오는지 검증 (작성 순)
@@ -72,7 +79,7 @@ case2 : 게시글 목록이 나오는지 검증 (조회수 순)
 case3 : 특정 게시글 조회가 되는지 검증
 '''
 def test_list_or_one_board():
-
+    
     response = client.post("/auth/login",
                             data={"username":u.email,"password":u.pw}
                           )
@@ -111,7 +118,7 @@ def test_list_or_one_board():
 
 #case3 : 특정 게시글 조회가 되는지 검증
     ob = resb[0]
-    print(ob)
+
     response = client.get(f'/board/{ob["no"]}')
     
     assert response.status_code == 200    
@@ -120,7 +127,159 @@ def test_list_or_one_board():
     assert ob["create_time"] == response.json().get("create_time")
     assert ob["view"]+1 == response.json().get("view")
 
-    with get_session() as session:
-        board_statement = delete(Board)
-        session.exec(board_statement)
-        session.commit()
+    after_test_board()
+
+
+'''
+- 게시글 수정 검증
+case 1: 게시글 권한이 없는 유저가 타 게시글 수정 (error code = 1404)
+case 2: 게시글 작성자가 쓴 게시글 수정
+'''
+
+def test_update_board():
+    cases=[
+        User(email="test1@adoc.co.kr",name="joo1",pw="123456aB@"),
+        User(email="test2@adoc.co.kr",name="joo2",pw="123456aB@"),
+    ]
+    access_token=[]
+    refresh_token=[]
+    for c in cases:
+        response = client.post('/user/insert',
+                    json= c.model_dump()
+                    )
+        assert response.status_code == 200
+
+        response = client.post("/auth/login",
+                               data={"username":c.email,"password":c.pw}
+                               )
+        assert response.status_code == 200
+        access_token.append(response.json().get("access_token"))
+        refresh_token.append(response.json().get("refresh_token"))
+
+    b:Board= Board(board_name="수정 전",
+                   content="수정전 글 입니다.")
+    response = client.post('/board/insert',
+                headers={"Authorization": f'Bearer {access_token[0]}'},
+                json= b.model_dump()
+                )
+    
+    assert response.status_code == 200 
+
+    response = client.get('/board/list')
+    assert response.status_code == 200
+
+    res_no = response.json()[0]["no"]
+
+    update_board = {
+                    "no" : res_no,
+                    "board_name" : "수정 후",
+                    "content" : "수정후 글 입니다."
+                    }
+    # case 1: 게시글 권한이 없는 유저가 타 게시글 수정
+    response = client.put('/board/put',
+                          headers={"Authorization": f'Bearer {access_token[1]}'},
+                          json = update_board
+                          )
+    assert response.status_code == 403
+    error_code = response.json().get("code")
+    assert error_code == 1404
+
+    # case 2: 게시글 작성자가 쓴 게시글 수정
+    response = client.put('/board/put',
+                          headers={"Authorization": f'Bearer {access_token[0]}'},
+                          json = update_board
+                          )
+    assert response.status_code == 200
+    
+    response = client.get(f'/board/{res_no}')
+
+    assert response.status_code == 200    
+
+    assert update_board["board_name"] == response.json().get("boardname")
+    assert update_board["content"] == response.json().get("content")
+    
+    after_test_board()
+
+
+'''
+- 게시글 삭제 검증
+case 1: 게시글 권한이 없는 유저가 타 게시글 삭제 (error code = 1404)
+case 2: 없는 게시글 삭제 (error code = 1403)
+case 3: 게시글 작성자가 쓴 게시글 수정
+'''
+
+def test_delete_board():
+    cases=[
+        User(email="test01@adoc.co.kr",name="joo1",pw="123456aB@"),
+        User(email="test02@adoc.co.kr",name="joo2",pw="123456aB@"),
+    ]
+    access_token=[]
+    refresh_token=[]
+    for c in cases:
+        response = client.post('/user/insert',
+                    json= c.model_dump()
+                    )
+        assert response.status_code == 200
+
+        response = client.post("/auth/login",
+                               data={"username":c.email,"password":c.pw}
+                               )
+        assert response.status_code == 200
+        access_token.append(response.json().get("access_token"))
+        refresh_token.append(response.json().get("refresh_token"))
+
+    b:Board= Board(board_name="삭제 전",
+                   content="삭제전 글 입니다.")
+    response = client.post('/board/insert',
+                headers={"Authorization": f'Bearer {access_token[0]}'},
+                json= b.model_dump()
+                )
+    
+    assert response.status_code == 200 
+
+    response = client.get('/board/list')
+    assert response.status_code == 200
+
+    res_no = response.json()[0]["no"]
+
+    # case 1: 게시글 권한이 없는 유저가 타 게시글 삭제 (error code = 1404)
+    response = client.request(
+                            method="DELETE",
+                            url='/board/delete',
+                            headers={"Authorization": f'Bearer {access_token[1]}'},
+                            params={"no":res_no}
+                            )
+
+    assert response.status_code == 403
+    error_code = response.json().get("code")
+    assert error_code == 1404
+
+    # case 2: 없는 게시글 삭제 (error code = 1403)
+    response = client.request(
+                            method="DELETE",
+                            url='/board/delete',
+                            headers={"Authorization": f'Bearer {access_token[1]}'},
+                            params={"no":0}
+                            )
+
+    assert response.status_code == 200
+    error_code = response.json().get("code")
+    assert error_code == 1403
+
+    # case 3: 게시글 작성자가 쓴 게시글 수정
+    response = client.request(
+                            method="DELETE",
+                            url='/board/delete',
+                            headers={"Authorization": f'Bearer {access_token[0]}'},
+                            params={"no":res_no}
+                            )
+
+    assert response.status_code == 200
+
+    response = client.get(f'/board/{res_no}')
+
+    assert response.status_code == 200    
+    error_code = response.json().get("code")
+    assert error_code == 1403
+
+    after_test_board()
