@@ -1,11 +1,13 @@
 from fastapi import APIRouter, Depends, Request
 from fastapi.security import OAuth2PasswordRequestForm
 from model.user import User,select_one
+from model.log import insert_log
 from handler.response_handler import handle_error
 from fastapi.responses import JSONResponse
 from starlette.middleware.base import BaseHTTPMiddleware
 from jose import jwt, JWTError
 from dotenv import load_dotenv
+import json
 import os
 import hashlib
 from datetime import datetime,timedelta
@@ -20,11 +22,18 @@ REFRESH_TOKEN_EXPIRE_TIME = 60 * 24
 
 # JWT_PATH = ["/docs","/openapi.json","/auth/login","/user/insert","/access_token","/board/list","/board/{no}"]
 JWT_PATH = ["/auth/add_access_token","/user/delete","/user/put","/board/insert","/board/put","/board/delete"]
-
+CRUD = ["POST","GET", "PUT","DELETE"]
 class JWTAuthMiddleware(BaseHTTPMiddleware):
     async def dispatch(self, request: Request, call_next):
+        try:
+            request.state.body = await request.json() if request.method in CRUD else {}
+        except json.JSONDecodeError:
+            request.state.body = {"item": "empty"}
+
         if request.url.path not in JWT_PATH:
             response = await call_next(request)
+            request.state.u = None
+            await insert_log(request,response)
             return response
         auth_header = request.headers.get("Authorization")
         if auth_header:
@@ -49,6 +58,7 @@ class JWTAuthMiddleware(BaseHTTPMiddleware):
         else:
             return handle_error(1305,401)
         response = await call_next(request)
+        await insert_log(request,response)
         return response
 
 
