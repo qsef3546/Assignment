@@ -51,7 +51,7 @@ async def board_insert(b:Board, request:Request):
     b.create_time = datetime.now()
     if insert(b) == False:
         handle_error(1200,500)
-    return JSONResponse({"message" : "게시글 작성이 완료되었습니다."},200)
+    return JSONResponse({"message" : "게시글 작성이 완료되었습니다."},201)
 
 @board_router.put("/put")
 def board_put(b:Board, request:Request):

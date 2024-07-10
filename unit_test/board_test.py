@@ -41,7 +41,7 @@ def test_insert_board():
     response = client.post('/user/insert',
                 json= u.model_dump()
                 )
-    assert response.status_code == 200
+    assert response.status_code == 201
 
     response = client.post("/auth/login",
                             data={"username":u.email,"password":u.pw}
@@ -67,7 +67,7 @@ def test_insert_board():
                 headers={"Authorization": f'Bearer {access_token}'},
                 json= b.model_dump()
                 )
-    assert response.status_code == 200
+    assert response.status_code == 201
 
     after_test_board()
 '''
@@ -94,7 +94,7 @@ def test_list_or_one_board():
                 headers={"Authorization": f'Bearer {access_token}'},
                 json= b.model_dump()
                 )
-            assert response.status_code == 200
+            assert response.status_code == 201
 #case1 : 게시글 목록이 나오는지 검증 (작성 순)
     response = client.get('/board/list')
     assert response.status_code == 200
@@ -157,7 +157,7 @@ def test_pagenation_board():
                 headers={"Authorization": f'Bearer {access_token}'},
                 json= b.model_dump()
                 )
-            assert response.status_code == 200
+            assert response.status_code == 201
 
     # case1 : pageoffset 0 일때 검증 (공지사항1~5 글이 조회 돼야함)
     pageoffset = 0
@@ -197,7 +197,7 @@ def test_update_board():
         response = client.post('/user/insert',
                     json= c.model_dump()
                     )
-        assert response.status_code == 200
+        assert response.status_code == 201
 
         response = client.post("/auth/login",
                                data={"username":c.email,"password":c.pw}
@@ -213,7 +213,7 @@ def test_update_board():
                 json= b.model_dump()
                 )
     
-    assert response.status_code == 200 
+    assert response.status_code == 201
 
     response = client.get('/board/list')
     assert response.status_code == 200
@@ -269,7 +269,7 @@ def test_delete_board():
         response = client.post('/user/insert',
                     json= c.model_dump()
                     )
-        assert response.status_code == 200
+        assert response.status_code == 201
 
         response = client.post("/auth/login",
                                data={"username":c.email,"password":c.pw}
@@ -285,7 +285,7 @@ def test_delete_board():
                 json= b.model_dump()
                 )
     
-    assert response.status_code == 200 
+    assert response.status_code == 201 
 
     response = client.get('/board/list')
     assert response.status_code == 200

@@ -33,7 +33,7 @@ def test_signup():
     response = client.post('/user/insert',
                 json= u.model_dump()
                 )
-    assert response.status_code == 200
+    assert response.status_code == 201
 
 '''
 - 회원가입시 필요한 파라미더 값을 보내는지 검증
@@ -149,7 +149,7 @@ def test_withdrawal():
         response = client.post('/user/insert',
                     json= c.model_dump()
                     )
-        assert response.status_code == 200
+        assert response.status_code == 201
 
         response = client.post("/auth/login",
                                data={"username":c.email,"password":c.pw}
@@ -196,7 +196,7 @@ def test_withdrawal():
                                headers={"Authorization": f'Bearer {access_token[1]}'},
                                json=b.model_dump()
                            )
-    assert response.status_code == 200
+    assert response.status_code == 201
 
     response = client.request(
                             method="DELETE",

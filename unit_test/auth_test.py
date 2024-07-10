@@ -29,7 +29,7 @@ def test_login():
     response = client.post('/user/insert',
                 json= u.model_dump()
                 )
-    assert response.status_code == 200
+    assert response.status_code == 201
 
     response = client.post(
         "auth/login",

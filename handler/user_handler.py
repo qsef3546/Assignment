@@ -51,7 +51,7 @@ def user_insert(u:User):
     if insert(u) == False:
         handle_error(1200,500)        
     else:
-        return JSONResponse({"message":f"{u.email} 님의 회원가입이 완료되었습니다."},200)
+        return JSONResponse({"message":f"{u.email} 님의 회원가입이 완료되었습니다."},201)
     
 @user_router.put("/put")
 def user_put(u:User, request:Request):
