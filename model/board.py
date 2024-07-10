@@ -1,5 +1,5 @@
 from sqlmodel import Field, SQLModel, select, update
-from model.sqlconf import get_session
+from model.pg_sqlconf import get_session
 from datetime import datetime
 
 

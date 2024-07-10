@@ -1,5 +1,5 @@
 from sqlmodel import Field, SQLModel, select,update,delete
-from model.sqlconf import get_session
+from model.pg_sqlconf import get_session
 from model.board import Board
 class User(SQLModel, table=True):
     __tablename__ = "User"

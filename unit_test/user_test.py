@@ -2,9 +2,9 @@ from fastapi.testclient import TestClient
 import sys,os
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 from model.user import User,select_one
-from model.board import Board,insert
+from model.board import Board
 from sqlmodel import delete
-from model.sqlconf import get_session
+from model.pg_sqlconf import get_session
 from handler.auth_handler import encoded_pw
 from main import app
 

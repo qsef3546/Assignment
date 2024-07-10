@@ -4,7 +4,7 @@ sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 from model.user import User
 from model.board import Board
 from sqlmodel import delete
-from model.sqlconf import get_session
+from model.pg_sqlconf import get_session
 from main import app
 
 client = TestClient(app)
