@@ -1,5 +1,5 @@
 
-# FastAPI 인증
+# Assignment
 
 이 FastAPI 프로젝트는 JWT(JSON Web Tokens)를 사용한 인증을 제공합니다. 이 프로젝트에는 사용자 로그인, 토큰 생성 및 보호된 경로에 대한 JWT 인증 처리를 위한 미들웨어가 포함되어 있습니다.
 
