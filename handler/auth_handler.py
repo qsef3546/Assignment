@@ -34,7 +34,7 @@ class JWTAuthMiddleware(BaseHTTPMiddleware):
                     return handle_error(1302,401)
 
                 payload = jwt.decode(token, SECRET_KEY, algorithms=ALGORITHM)
-                username = payload.get('id')
+                username = payload.get("sub")
                 
                 u:User = None
                 if not username or not (u :=select_one(email=username)):
@@ -70,7 +70,7 @@ async def login(form_data: OAuth2PasswordRequestForm = Depends()):
     u:User = select_one(form_data.username)
     if not u or not (encoded_pw(form_data.password) == u.pw):
         return handle_error(1110,401)
-    data = {"id": form_data.username}
+    data = {"sub": form_data.username}
     access_token = create_token(data,ACCESS_TOKEN_EXPIRE_TIME)
     refresh_token = create_token(data,REFRESH_TOKEN_EXPIRE_TIME)
     return JSONResponse({"access_token":access_token,"refresh_token":refresh_token},200)
