@@ -87,6 +87,6 @@ async def login(form_data: OAuth2PasswordRequestForm = Depends()):
 
 @auth_router.post("/add_access_token")
 async def add_access_token(request:Request):
-    data = {"id": request.state.u.email}
+    data = {"sub": request.state.u.email}
     access_token = create_token(data,ACCESS_TOKEN_EXPIRE_TIME)
     return JSONResponse({"access_token":access_token},200)
