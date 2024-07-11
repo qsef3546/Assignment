@@ -7,7 +7,7 @@ from fastapi.security import OAuth2PasswordRequestForm
 import re
 
 
-user_router = APIRouter(prefix="/user")
+user_router = APIRouter(prefix="/user", tags=["user"])
 
 def emptycheck(u:User):
     if not u.email:

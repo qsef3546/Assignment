@@ -3,7 +3,7 @@ from fastapi.responses import JSONResponse
 from model.board import Board,insert,selects,select_one,update_one,delete,RECENTLY,VIEW
 from handler.response_handler import handle_error
 from datetime import datetime
-board_router = APIRouter(prefix="/board")
+board_router = APIRouter(prefix="/board", tags=["board"])
 
 def board_validation(bordname:str):
     return (0 < len(bordname) <= 100)

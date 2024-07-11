@@ -11,7 +11,7 @@ import json
 import os
 import hashlib
 from datetime import datetime,timedelta
-auth_router = APIRouter(prefix="/auth")
+auth_router = APIRouter(prefix="/auth", tags=["auth"])
 
 load_dotenv()
 
